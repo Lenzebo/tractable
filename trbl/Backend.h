@@ -1,6 +1,6 @@
 #pragma once
 #include "Context.h"
-#include "Trace.h"
+#include "Span.h"
 
 #include <string_view>
 
@@ -14,13 +14,13 @@ class Backend
     virtual void beginTracing(){};
     virtual void endTracing(){};
 
-    virtual void writeTrace(const std::string_view name, const Trace& trace, const Context& context = getContext()) = 0;
+    virtual void writeSpan(const std::string_view name, const Span& span, const Context& context = getContext()) = 0;
 };
 
 class NullBackend : public Backend
 {
   public:
-    void writeTrace(const std::string_view, const Trace&, const Context&) override{};
+    void writeSpan(const std::string_view, const Span&, const Context&) override{};
 };
 
 Backend& getBackend();

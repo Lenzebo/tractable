@@ -2,7 +2,7 @@
 
 #include <thread>
 namespace trbl::backends {
-void ChromeTracingBackend::writeTrace(const std::string_view name, const Trace& trace, const Context& context)
+void ChromeTracingBackend::writeSpan(const std::string_view name, const Span& span, const Context& context)
 {
     constexpr std::string_view CATEGORY = "blubl";
     constexpr int PID = 1;
@@ -23,8 +23,8 @@ void ChromeTracingBackend::writeTrace(const std::string_view name, const Trace& 
     outFile_ << R"("name": ")" << name << "\", ";
     outFile_ << R"("cat": ")" << CATEGORY << "\", ";
     outFile_ << R"("ph": "X",)";
-    outFile_ << R"("ts": ")" << asMicroseconds(trace.start.time_since_epoch()) << "\", ";
-    auto duration = trace.end - trace.start;
+    outFile_ << R"("ts": ")" << asMicroseconds(span.start.time_since_epoch()) << "\", ";
+    auto duration = span.end - span.start;
     outFile_ << R"("dur": ")" << asMicroseconds(duration) << "\", ";
     outFile_ << R"("pid": ")" << PID << "\", ";
     outFile_ << R"("tid": ")" << tid << "\"";

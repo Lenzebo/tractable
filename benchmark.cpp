@@ -1,7 +1,8 @@
-#include "Tracer.h"
 #include "backends/AsyncBackend.h"
 #include "backends/ChromeTracingBackend.h"
 #include "backends/LockedThreadsafeBackend.h"
+#include "trbl/Session.h"
+#include "trbl/Trace.h"
 
 #include <benchmark/benchmark.h>
 
@@ -19,46 +20,10 @@ int calculate(size_t num)
     return result;
 }
 
-int testbedNotInstrumented(size_t num)
+int calculateInstrumented(size_t num)
 {
-    int res = calculate(num);
-    res += calculate(num);
-    res += calculate(num);
-    res += calculate(num);
-    res += calculate(num);
-    res += calculate(num);
-    return res;
-}
-
-int testbedInstrumented(size_t num)
-{
-    int res = 0;
-    trbl::Tracer t{"Main"};
-    {
-        trbl::Tracer ts{"Sub1"};
-        res += calculate(num);
-        {
-            trbl::Tracer tss{"SubSub1"};
-            res += calculate(num);
-        }
-    }
-
-    {
-        trbl::Tracer ts{"Sub2"};
-        res += calculate(num);
-        {
-            trbl::Tracer tss{"SubSub2"};
-            res += calculate(num);
-        }
-    }
-
-    res += calculate(num);
-
-    {
-        trbl::Tracer ts{"Sub3"};
-        res += calculate(num);
-    }
-    return res;
+    trbl::Trace t{"Main"};
+    return calculate(num);
 }
 
 void benchmarkNotInstrumented(benchmark::State& state)
@@ -66,19 +31,62 @@ void benchmarkNotInstrumented(benchmark::State& state)
     auto count = state.range();
     for (auto _ : state)
     {
-        benchmark::DoNotOptimize(testbedNotInstrumented(count));
+        benchmark::DoNotOptimize(calculate(count));
+    }
+}
+
+void benchmarkMTNotInstrumented(benchmark::State& state)
+{
+    trbl::Session session;
+    auto count = state.range(0);
+    auto numThreads = 8;
+
+    for (auto _ : state)
+    {
+        std::vector<std::thread> threads;
+        for (size_t t = 0; t < numThreads; ++t)
+        {
+            threads.emplace_back([&]() {
+                for (size_t i = 0; i < 1000; ++i)
+                {
+                    benchmark::DoNotOptimize(calculate(count));
+                }
+            });
+        }
+        for (auto& thread : threads) thread.join();
     }
 }
 
 void benchmarkInstrumented(benchmark::State& state)
 {
-    trbl::getBackend().beginTracing();
+    trbl::Session session;
     auto count = state.range();
     for (auto _ : state)
     {
-        benchmark::DoNotOptimize(testbedInstrumented(count));
+        benchmark::DoNotOptimize(calculateInstrumented(count));
     }
-    trbl::getBackend().endTracing();
+}
+
+void benchmarkThreadedInstrumented(benchmark::State& state)
+{
+    trbl::Session session;
+    auto count = state.range(0);
+    auto numThreads = 8;
+
+    for (auto _ : state)
+    {
+        std::vector<std::thread> threads;
+        for (size_t t = 0; t < numThreads; ++t)
+        {
+            threads.emplace_back([&]() {
+                for (size_t i = 0; i < 1000; ++i)
+                {
+                    benchmark::DoNotOptimize(calculateInstrumented(count));
+                }
+            });
+        }
+        for (auto& thread : threads) thread.join();
+    }
 }
 
 void benchmarkChromeTracing(benchmark::State& state)
@@ -107,10 +115,29 @@ void benchmarkDisabledTracing(benchmark::State& state)
     benchmarkInstrumented(state);
 }
 
-BENCHMARK(benchmarkNotInstrumented)->Arg(1e2);
-BENCHMARK(benchmarkDisabledTracing)->Arg(1e2);
-BENCHMARK(benchmarkChromeTracing)->Arg(1e2);
-BENCHMARK(benchmarkChromeTracingAsync)->Arg(1e2);
-BENCHMARK(benchmarkChromeTracingThreadsafe)->Arg(1e2);
+void benchmarkMTChromeTracingAsync(benchmark::State& state)
+{
+    trbl::setBackend(
+        std::make_unique<trbl::backends::AsyncBackend>(std::make_unique<trbl::backends::ChromeTracingBackend>()));
+    benchmarkThreadedInstrumented(state);
+}
+
+void benchmarkMTChromeTracingThreadsafe(benchmark::State& state)
+{
+    trbl::setBackend(std::make_unique<trbl::backends::LockedThreadsafeBackend>(
+        std::make_unique<trbl::backends::ChromeTracingBackend>()));
+    benchmarkThreadedInstrumented(state);
+}
+
+constexpr int CALCULATION_SIZE = 100;
+BENCHMARK(benchmarkNotInstrumented)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkDisabledTracing)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkChromeTracing)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkChromeTracingAsync)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkChromeTracingThreadsafe)->Arg(CALCULATION_SIZE);
+
+BENCHMARK(benchmarkMTNotInstrumented)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkMTChromeTracingAsync)->Arg(CALCULATION_SIZE);
+BENCHMARK(benchmarkMTChromeTracingThreadsafe)->Arg(CALCULATION_SIZE);
 
 }  // namespace

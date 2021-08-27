@@ -13,13 +13,13 @@ class AsyncBackend : public Backend
 
     void beginTracing() override;
     void endTracing() override;
-    void writeTrace(const std::string_view name, const Trace& trace, const Context& context) override;
+    void writeSpan(const std::string_view name, const Span& span, const Context& context) override;
 
   private:
     struct Entry
     {
         std::string name;
-        Trace trace;
+        Span span;
         Context context;
     };
 

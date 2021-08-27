@@ -9,7 +9,9 @@ class LockedThreadsafeBackend : public Backend
 {
   public:
     LockedThreadsafeBackend(std::unique_ptr<Backend>&& backend);
-    void writeTrace(const std::string_view name, const Trace& trace, const Context& context) override;
+    void writeSpan(const std::string_view name, const Span& span, const Context& context) override;
+    void beginTracing() override;
+    void endTracing() override;
 
   private:
     std::unique_ptr<Backend> backend_;

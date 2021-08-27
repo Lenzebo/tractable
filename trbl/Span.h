@@ -5,15 +5,15 @@
 namespace trbl {
 
 using TimeStamp = std::chrono::time_point<std::chrono::high_resolution_clock>;
-using TraceId = uint64_t;
-constexpr inline TraceId INVALID_TRACE_ID = std::numeric_limits<TraceId>::max();
+using SpanId = uint64_t;
+constexpr inline SpanId INVALID_SPAN_ID = std::numeric_limits<SpanId>::max();
 
-struct Trace
+struct Span
 {
     TimeStamp start{};
     TimeStamp end{};
-    TraceId id{INVALID_TRACE_ID};
-    TraceId parent{INVALID_TRACE_ID};
+    SpanId id{INVALID_SPAN_ID};
+    SpanId parent{INVALID_SPAN_ID};
 };
 
 }  // namespace trbl
