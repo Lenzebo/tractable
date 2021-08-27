@@ -2,6 +2,8 @@
 
 #include <thread>
 namespace trbl::backends {
+ChromeTracingBackend::ChromeTracingBackend(std::string filename) : filename_(std::move(filename)) {}
+
 void ChromeTracingBackend::writeSpan(const std::string_view name, const Span& span, const Context& context)
 {
     constexpr std::string_view CATEGORY = "blubl";
@@ -33,7 +35,7 @@ void ChromeTracingBackend::writeSpan(const std::string_view name, const Span& sp
 
 void ChromeTracingBackend::beginTracing()
 {
-    outFile_ = std::ofstream("out.json");
+    outFile_ = std::ofstream(filename_);
     outFile_ << "{";
     outFile_ << R"("traceEvents": [)";
 
