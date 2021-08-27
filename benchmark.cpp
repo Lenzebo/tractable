@@ -1,8 +1,8 @@
-#include "backends/AsyncBackend.h"
-#include "backends/ChromeTracingBackend.h"
-#include "backends/LockedThreadsafeBackend.h"
 #include "trbl/Session.h"
 #include "trbl/Trace.h"
+#include "trbl/backends/AsyncBackend.h"
+#include "trbl/backends/ChromeTracingBackend.h"
+#include "trbl/backends/LockedThreadsafeBackend.h"
 
 #include <benchmark/benchmark.h>
 

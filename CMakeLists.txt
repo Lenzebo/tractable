@@ -3,6 +3,8 @@ project(tractable)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include_directories($(CMAKE_CURRENT_DIR))
+
 add_subdirectory(third_party)
 add_subdirectory(trbl)
 
