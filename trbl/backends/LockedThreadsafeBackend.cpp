@@ -9,10 +9,25 @@ void LockedThreadsafeBackend::writeSpan(const std::string_view name, const Span&
     std::scoped_lock lock(mutex_);
     backend_->writeSpan(name, span, context);
 }
+
+void LockedThreadsafeBackend::writeCounter(const std::string_view name, const CounterEvent event,
+                                           const Context& context)
+{
+    std::scoped_lock lock(mutex_);
+    backend_->writeCounter(name, event, context);
+}
+
+void LockedThreadsafeBackend::writeEvent(const std::string_view name, const TimeStamp ts, const Context& context)
+{
+    std::scoped_lock lock(mutex_);
+    backend_->writeEvent(name, ts, context);
+}
+
 void LockedThreadsafeBackend::beginTracing()
 {
     backend_->beginTracing();
 }
+
 void LockedThreadsafeBackend::endTracing()
 {
     backend_->endTracing();

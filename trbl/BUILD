@@ -11,6 +11,7 @@ cc_library(
         "Session.h",
         "Span.h",
         "Trace.h",
+        "Counter.h",
     ],
 )
 

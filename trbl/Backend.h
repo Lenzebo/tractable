@@ -6,6 +6,12 @@
 
 namespace trbl {
 
+struct CounterEvent
+{
+    TimeStamp timestamp{};
+    uint64_t value{};
+};
+
 class Backend
 {
   public:
@@ -15,12 +21,17 @@ class Backend
     virtual void endTracing(){};
 
     virtual void writeSpan(const std::string_view name, const Span& span, const Context& context = getContext()) = 0;
+    virtual void writeCounter(const std::string_view name, const CounterEvent event,
+                              const Context& context = getContext()) = 0;
+    virtual void writeEvent(const std::string_view name, const TimeStamp ts, const Context& context = getContext()) = 0;
 };
 
 class NullBackend : public Backend
 {
   public:
     void writeSpan(const std::string_view, const Span&, const Context&) override{};
+    void writeCounter(const std::string_view name, const CounterEvent event, const Context& context) override {}
+    void writeEvent(const std::string_view name, const TimeStamp ts, const Context& context) override {}
 };
 
 Backend& getBackend();
