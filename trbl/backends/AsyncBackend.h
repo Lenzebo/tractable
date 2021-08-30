@@ -14,6 +14,8 @@ class AsyncBackend : public Backend
     void beginTracing() override;
     void endTracing() override;
     void writeSpan(const std::string_view name, const Span& span, const Context& context) override;
+    void writeCounter(const std::string_view name, const CounterEvent event, const Context& context) override;
+    void writeEvent(const std::string_view name, const TimeStamp ts, const Context& context) override;
 
   private:
     struct Entry

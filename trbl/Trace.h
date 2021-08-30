@@ -12,12 +12,16 @@ template <typename ClockT>
 class TraceT
 {
   public:
-    TraceT(std::string_view name) : name_(name)
+    TraceT(std::string_view name, Level l = Level::HIGH) : name_(name)
     {
-        span_.parent = getContext().activeTrace;
-        span_.id = std::hash<std::string_view>{}(name);
-        span_.start = ClockT::now();
-        getContext().activeTrace = span_.id;
+        if (getLevel() <= l)
+        {
+            running_ = true;
+            span_.parent = getContext().activeTrace;
+            span_.id = std::hash<std::string_view>{}(name);
+            span_.start = ClockT::now();
+            getContext().activeTrace = span_.id;
+        }
     }
 
     ~TraceT()
@@ -37,7 +41,7 @@ class TraceT
   private:
     std::string_view name_{};
     Span span_{};
-    bool running_{true};
+    bool running_{false};
 };
 
 using Trace = TraceT<std::chrono::high_resolution_clock>;

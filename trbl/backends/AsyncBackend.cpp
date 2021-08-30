@@ -55,5 +55,13 @@ void AsyncBackend::endTracing()
     assert(queue_.empty());
     backend_->endTracing();
 }
+void AsyncBackend::writeCounter(const std::string_view name, const CounterEvent event, const Context& context)
+{
+    assert(false);
+}
+void AsyncBackend::writeEvent(const std::string_view name, const TimeStamp ts, const Context& context)
+{
+    assert(false);
+}
 
 }  // namespace trbl::backends

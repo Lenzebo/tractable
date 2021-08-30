@@ -12,6 +12,15 @@ struct CounterEvent
     uint64_t value{};
 };
 
+enum class Level
+{
+    LOWEST,
+    LOW,
+    MEDIUM,
+    HIGH,
+    OFF,
+};
+
 class Backend
 {
   public:
@@ -26,7 +35,7 @@ class Backend
     virtual void writeEvent(const std::string_view name, const TimeStamp ts, const Context& context = getContext()) = 0;
 };
 
-class NullBackend : public Backend
+class NullBackend final : public Backend
 {
   public:
     void writeSpan(const std::string_view, const Span&, const Context&) override{};
@@ -36,5 +45,8 @@ class NullBackend : public Backend
 
 Backend& getBackend();
 void setBackend(std::unique_ptr<Backend>&& backend);
+
+Level getLevel();
+void setLevel(Level l);
 
 }  // namespace trbl
